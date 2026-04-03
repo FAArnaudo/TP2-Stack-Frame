@@ -1,5 +1,13 @@
 # TP2-Stack-Frame
-Este el repositorio del trabajo práctico N2 de la materia de Sistemas de Computación
+Este el repositorio del trabajo práctico N° 2 de la materia de Sistemas de Computación
+
+## Grupo
+- **Ataque x86**
+
+## Integrantes
+-  *Arnaudo, Federico Andres*
+- 
+- 
 
 # Script de Python - main.py
 

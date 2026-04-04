@@ -34,9 +34,9 @@ while(flag):
     for item in values:
         if item["value"] == None:
             continue
-        print(f"date: {item["date"]}, value: {item["value"]}\n")
+        print(f"date: {item['date']}, value: {item['value']}\n")
         int_converted = float_to_int_plus_one(item["value"])
-        print(f"date: {item["date"]}, value: {int_converted}\n")
+        print(f"date: {item['date']}, value: {int_converted}\n")
 
     flag = input("Continuar --> 1\nFinalizar --> 0\n")
     if flag == False:

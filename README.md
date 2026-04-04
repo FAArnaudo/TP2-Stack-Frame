@@ -1,13 +1,12 @@
 # TP2-Stack-Frame
-Este el repositorio del trabajo práctico N° 2 de la materia de Sistemas de Computación
+Este es el repositorio del trabajo práctico N° 2 de la materia de Sistemas de Computación.
 
 ## Grupo
 - *Ataque x86*
 
 ## Integrantes
--  *Arnaudo, Federico Andres*
--  *Perotti, Franco José*
-- 
+- *Arnaudo, Federico Andres*
+- *Perotti, Franco José*
 
 # Script de Python - main.py
 
@@ -41,7 +40,7 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    A[Usuario ingresa un pais] --> B[main.py]
+    A[Usuario ingresa un país] --> B[main.py]
     B --> C[Consulta a la API del Banco Mundial]
     C --> D[Respuesta JSON con valores GINI]
     D --> E[main.py filtra valores no nulos]
@@ -52,7 +51,7 @@ flowchart TD
     I --> J[converter.c devuelve el entero transformado]
     J --> K[main.py imprime valor original y valor transformado]
     K --> L{Continuar?}
-    L -->|Si| A
+    L -->|Sí| A
     L -->|No| M[Fin del programa]
 ```
 
@@ -69,7 +68,7 @@ sequenceDiagram
     participant A as plus_one.s
 
     U->>P: Ingresa pais
-    P->>WB: GET indice GINI 2011:2020
+    P->>WB: GET índice GINI 2011:2020
     WB-->>P: JSON con valores
     loop Por cada valor no nulo
         P->>CT: float_to_int_plus_one(valor)
@@ -98,10 +97,10 @@ Enlaza los objetos generados y produce la librería compartida (.so) llamada **t
 
 ```python3 ./main.py```
 
-Para ejecutar el script de python
+Para ejecutar el script de Python.
 
 
-## Convencion de llamada
+## Convención de llamada
 
 ```as --64 -g -o to_int.o to_int.s```
 
@@ -109,27 +108,27 @@ Para ejecutar el script de python
 
 ```gcc -g -O0 -c -o converter.o converter.c```
 
-```gcc -o programa converter.o to_int.o plus_one.o```
+```gcc -shared -o to_int_plus_one.so converter.o to_int.o plus_one.o```
 
 ## GDB
 
-Iniciar la ejecucion con GDB
+Iniciar la ejecución con GDB:
 
-    gdb ./programa
+    gdb --args python3 ./main.py
 
-Detener en la línea 11 de archivo.c
+Detener en la función de C:
 
-    break converter.c:11
+    break to_int_plus_one
 
-Entra en las funciones
+Entrar en las funciones:
 
     step [s]
 
 Ejecuta la siguiente línea sin entrar en funciones.
 
-    netx [n]
+    next [n]
 
-Continua la ejecución.
+Continúa la ejecución.
 
     continue [c]
 

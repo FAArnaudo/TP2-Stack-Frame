@@ -67,7 +67,7 @@ sequenceDiagram
     participant T as to_int.s
     participant A as plus_one.s
 
-    U->>P: Ingresa pais
+    U->>P: Ingresa codigo de pais
     P->>WB: GET índice GINI 2011:2020
     WB-->>P: JSON con valores
     loop Por cada valor no nulo
@@ -84,56 +84,106 @@ sequenceDiagram
     P-->>U: Pregunta si desea continuar
 ```
 
-# Comandos utilizados:
+# Comandos utilizados
 
-```gcc -shared -o to_int_plus_one.so converter.o to_int.o plus_one.o```
+Para compilar el proyecto:
 
-Usa el compilador GCC (GNU Compiler Collection) para crear una biblioteca compartida.
+```make```
 
-- -shared: Esto crea un fichero shared object llamado **to_int_plus_one.so**.
-- -o: Define el nombre del archivo .so de salida.
+Este comando:
 
-Enlaza los objetos generados y produce la librería compartida (.so) llamada **to_int_plus_one.so**, que luego puede ser usada por el programa **main.py**.
+- ensambla `to_int.s` y `plus_one.s`
+- compila `converter.c`
+- genera la biblioteca compartida `to_int_plus_one.so`
+
+Para ejecutar el script de Python:
 
 ```python3 ./main.py```
 
-Para ejecutar el script de Python.
+o bien:
+
+```make run```
+
+Nota: antes de ejecutar `main.py`, debe existir `to_int_plus_one.so`.
 
 
 ## Convención de llamada
+
+Compilación normal del proyecto:
+
+```as -o to_int.o to_int.s```
+
+```as -o plus_one.o plus_one.s```
+
+```gcc -Wall -fPIC -c -o converter.o converter.c```
+
+```gcc -shared -o to_int_plus_one.so converter.o to_int.o plus_one.o```
+
+Si se quiere depurar con GDB con símbolos de depuración, conviene recompilar manualmente con:
 
 ```as --64 -g -o to_int.o to_int.s```
 
 ```as --64 -g -o plus_one.o plus_one.s```
 
-```gcc -g -O0 -c -o converter.o converter.c```
+```gcc -g -O0 -fPIC -c -o converter.o converter.c```
 
 ```gcc -shared -o to_int_plus_one.so converter.o to_int.o plus_one.o```
 
 ## GDB
 
+Antes de usar GDB, conviene recompilar la biblioteca con símbolos de depuración usando los comandos de la sección anterior.
+
 Iniciar la ejecución con GDB:
 
     gdb --args python3 ./main.py
+
+Como la biblioteca compartida se carga dinámicamente desde Python, antes de definir breakpoints conviene ejecutar:
+
+    set breakpoint pending on
 
 Detener en la función de C:
 
     break to_int_plus_one
 
+También se puede detener en las rutinas ASM:
+
+    break to_int
+    break plus_one
+
+Ejecutar el programa:
+
+    run
+
+Durante la ejecución, ingresar un código de país válido, por ejemplo `ar`, para que Python invoque la biblioteca compartida y se activen los breakpoints pendientes.
+
 Entrar en las funciones:
 
     step [s]
+
+Para avanzar instrucción por instrucción en ASM:
+
+    stepi [si]
 
 Ejecuta la siguiente línea sin entrar en funciones.
 
     next [n]
 
+Para avanzar sin entrar en la siguiente instrucción ASM:
+
+    nexti [ni]
+
 Continúa la ejecución.
 
     continue [c]
 
-Imprime el valor de una variable:
+Inspección útil en la función de C (`to_int_plus_one`):
 
-    print value_float
+    print numb_float
+    next
+    print result
     print $eax
     print $rax
+    info registers rax rbp rsp
+    x/4xg $rsp
+
+Nota: `print result` funciona en el contexto de `to_int_plus_one` luego de avanzar una línea con `next`. En `to_int` y `plus_one` conviene inspeccionar registros y stack con `info registers` y `x/... $rsp`.

@@ -30,6 +30,9 @@ dist/
 build/
 *.egg-info/
 
+# Build
+build/
+
 # Common
 .DS_Store
 *.swp

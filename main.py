@@ -1,8 +1,10 @@
 import requests
 import ctypes
+from pathlib import Path
 
 # Cargamos la libreria
-lib_converter = ctypes.CDLL("./to_int_plus_one.so")
+LIB_PATH = Path(__file__).resolve().parent / "build" / "to_int_plus_one.so"
+lib_converter = ctypes.CDLL(str(LIB_PATH))
 
 # Definimos los tipos de los argumentos de la función de conversión
 lib_converter.to_int_plus_one.argtypes = (ctypes.c_float,)

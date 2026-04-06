@@ -1,75 +1,109 @@
 # TP2-Stack-Frame
-Este el repositorio del trabajo práctico N° 2 de la materia de Sistemas de Computación
+
+Trabajo práctico de Sistemas de Computación sobre consumo de la API del Banco Mundial, integración Python/C/Assembler y análisis de stack frame.
 
 ## Grupo
+
 - *Ataque x86*
 
 ## Integrantes
--  *Arnaudo, Federico Andres*
--  *Bonfils, Matías Gabriel
-- 
 
-# Script de Python - main.py
+- *Arnaudo, Federico Andres*
+- *Bonfils, Matías Gabriel*
+- *Perotti, Franco José*
 
-Este programa en Python consulta la API del Banco Mundial para obtener valores del índice GINI de un país ingresado por el usuario (entre 2011 y 2020). 
+## Descripción
 
-Luego, utiliza la librería `ctypes` para cargar una biblioteca compartida escrita en C (`converter.so`) y llamar a una función que convierte cada valor flotante en entero y le suma uno. 
+`main.py` consulta la API del Banco Mundial para obtener valores del índice GINI entre 2011 y 2020 a partir de un codigo de pais como `ar` o `arg`.
 
-Finalmente, muestra tanto el valor original como el valor transformado, repitiendo el proceso hasta que el usuario decida finalizar.
+Cada valor no nulo se envía a una librería compartida escrita en C y assembler:
 
+- `src/converter.c` actúa como capa intermedia
+- `src/to_int.s` convierte `float` a `int`
+- `src/plus_one.s` suma `1` al valor entero
 
-# Comandos utilizados:
+El programa muestra una tabla con los valores originales y convertidos, y además genera un gráfico del índice GINI por año usando `matplotlib`.
 
-```gcc -shared -W -o converter.so converter.c```
+Los artefactos compilados se generan en `build/`.
 
-Usa el compilador GCC (GNU Compiler Collection) para crear una biblioteca compartida.
+## Estructura del repositorio
 
-- -shared: Esto nos crea un fichero shared object llamado **converter.so**.
-- -W: Activa warnings (advertencias) del compilador.
-- -o: Define el nombre del archivo .so de salida.
+```text
+.
+├── README.md
+├── Makefile
+├── main.py
+├── src/
+│   ├── converter.c
+│   ├── to_int.s
+│   └── plus_one.s
+├── build/
+└── docs/
+    ├── verification.md
+    └── screenshots/
+```
 
-Compila el archivo C y genera una librería compartida (.so) llamada **converter.so**, que luego puede ser usada por el programa **main.py**.
+## Compilación
 
-```python3 ./main.py```
+Compilación normal:
 
-Para ejecutar el script de python
+```bash
+make
+```
 
+Compilación con símbolos de depuración para GDB:
 
-## Convencion de llamada
+```bash
+make debug
+```
 
-```as --64 -g -o to_int.o to_int.s```
+## Ejecución
 
-```as --64 -g -o plus_one.o plus_one.s```
+Dependencias de Python utilizadas en tiempo de ejecución:
 
-```gcc -g -O0 -c -o converter.o converter.c```
+- `requests`
+- `matplotlib`
 
-```gcc -o programa converter.o to_int.o plus_one.o```
+Ejecutar desde la raíz del repositorio:
+
+```bash
+python3 ./main.py
+```
+
+o bien:
+
+```bash
+make run
+```
+
+Después de imprimir la tabla, el programa abre una ventana con el gráfico de los valores GINI ordenados por año.
 
 ## GDB
 
-Iniciar la ejecucion con GDB
+Compilar con símbolos de depuración:
 
-    gdb ./programa
+```bash
+make debug
+```
 
-Detener en la línea 11 de archivo.c
+Iniciar GDB:
 
-    break converter.c:11
+```bash
+gdb --args python3 ./main.py
+```
 
-Entra en las funciones
+Al iniciar GDB, el proceso depurado es `python3` y la librería compartida todavía no fue cargada. Por eso, en ese momento, los símbolos `to_int_plus_one`, `to_int` y `plus_one` aún no están disponibles para GDB.
 
-    step [s]
+Como `ctypes` carga `build/to_int_plus_one.so` recién durante la ejecución del programa, conviene usar breakpoints pendientes. De ese modo, GDB acepta el breakpoint aunque la función todavía no sea conocida y lo resuelve automáticamente cuando la librería se carga en memoria.
 
-Ejecuta la siguiente línea sin entrar en funciones.
+```gdb
+set breakpoint pending on
+break to_int_plus_one
+break to_int
+break plus_one
+run
+```
 
-    netx [n]
+## Verification Report
 
-Continua la ejecución.
-
-    continue [c]
-
-Imprime el valor de una variable:
-
-    print value_float
-    print $eax
-    print $rax
-
+El informe de compilación, ejecución y depuración se encuentra en [`docs/verification.md`](docs/verification.md).

@@ -1,4 +1,6 @@
 import requests
+import matplotlib
+matplotlib.use('Agg')
 import ctypes
 import matplotlib.pyplot as plt
 from pathlib import Path
@@ -56,6 +58,30 @@ def print_results_table(results):
     print(separator)
     print()
 
+def mostrar_paises():
+    url = "https://api.worldbank.org/v2/country?format=json&per_page=300"
+    
+    response = requests.get(url)
+    data = response.json()
+    
+    # data[1] contiene la lista de países
+    countries = data[1]
+    
+    # Filtrar y formatear
+    opciones = [
+        (c["iso2Code"], c["name"])
+        for c in countries
+        if c["region"]["value"] != "Aggregates"
+    ]
+    
+    # Ordenar por nombre
+    opciones.sort(key=lambda x: x[1])
+    
+    # Imprimir
+    print("Lista de países disponibles:\n")
+    for code, name in opciones:
+        print(f"{code} - {name}")
+
 
 flag = True
 
@@ -102,6 +128,7 @@ while flag:
     results = []
     years = []
     gini_values = []
+    converted_values = []
 
     # Procesamos los valores obtenidos de la API, filtrando los que
     # no tienen valor y aplicando la conversión a los que si lo tienen
@@ -114,6 +141,7 @@ while flag:
 
         # Convertimos el valor a entero usando la función de conversión en C
         int_converted = float_to_int_plus_one(item["value"])
+        converted_values.append(int_converted)
         results.append(
             {
                 "date": item["date"],
@@ -125,7 +153,7 @@ while flag:
     if found_values:
         print_results_table(results)
 
-        combined = sorted(zip(years, gini_values))
+        combined = sorted(zip(years, converted_values))
         years_sorted, values_sorted = zip(*combined)
 
         plt.figure()
@@ -134,14 +162,23 @@ while flag:
         plt.ylabel("Índice GINI")
         plt.title(f"Índice GINI - {country.upper()}")
         plt.grid()
-        plt.show()
+        plt.savefig("/graficos/gini.png")
 
     if not found_values:
         print(
             "gini>> El codigo de pais ingresado no tiene valores GINI disponibles en ese rango.\n"
         )
 
-    flag = input("Continuar --> 1\nFinalizar --> 0\n").strip() == "1"
+    flag = input("gini>> Mostrar paises --> 2\n"
+                 "gini>> Continuar --> 1\n" +
+                 "gini>> Finalizar --> 0\n" + 
+                 "gini>> ")
+    
+    if flag == "2":
+        mostrar_paises()
+    elif flag == "0":
+        break
+
 
 
 print("Programa finalizado.")
